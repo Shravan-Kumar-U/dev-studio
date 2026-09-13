@@ -45,6 +45,12 @@ const ProductDetails = () => {
   const { socket, isConnected } = useContext(SocketContext);
   const wasDisconnected = useRef(false);
 
+  // --- NEW: Touch Swipe Tracking Refs ---
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+  const isSwiping = useRef(false);
+  const minSwipeDistance = 50;
+
   const fetchProductData = async () => {
     try {
       const res = await api.get(`/products/${id}`);
@@ -113,45 +119,70 @@ const ProductDetails = () => {
     };
   }, [socket, id, navigate]);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-
-    const fetchProductData = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/products/${id}`);
-        const productData = res.data.data;
-        setProduct(productData);
-        setMainImage(productData.images[0]?.url || "/placeholder.png");
-
-        const allRes = await api.get("/products");
-        const filtered = allRes.data.data
-          .filter((p) => p._id !== id)
-          .slice(0, 4);
-        setRelatedProducts(filtered);
-      } catch (err) {
-        console.error("Failed to fetch product:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductData();
-  }, [id]);
-
   const actualImages = product?.images || [];
+  const displayLimit = 3;
+  const extraImagesCount = actualImages.length - displayLimit;
+
+  const nextImage = () =>
+    setGalleryIndex((prev) =>
+      prev === actualImages.length - 1 ? 0 : prev + 1,
+    );
+  const prevImage = () =>
+    setGalleryIndex((prev) =>
+      prev === 0 ? actualImages.length - 1 : prev - 1,
+    );
+
+  // --- NEW: Touch Swipe Handlers ---
+  const onTouchStart = (e) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+    isSwiping.current = false;
+  };
+
+  const onTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEndMain = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(distance) > minSwipeDistance) {
+      isSwiping.current = true; // Flag to prevent the click (zoom) from triggering
+      const currentIndex = actualImages.findIndex((img) => img.url === mainImage);
+      if (currentIndex === -1) return;
+
+      if (distance > minSwipeDistance) {
+        // Swiped Left -> Next Image
+        const nextIdx = currentIndex === actualImages.length - 1 ? 0 : currentIndex + 1;
+        setMainImage(actualImages[nextIdx].url);
+      } else {
+        // Swiped Right -> Prev Image
+        const prevIdx = currentIndex === 0 ? actualImages.length - 1 : currentIndex - 1;
+        setMainImage(actualImages[prevIdx].url);
+      }
+    }
+  };
+
+  const onTouchEndGallery = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > minSwipeDistance) {
+        nextImage(); // Swipe Left
+      } else {
+        prevImage(); // Swipe Right
+      }
+    }
+  };
+  // ---------------------------------
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isGalleryOpen) return;
-      if (e.key === "ArrowRight")
-        setGalleryIndex((prev) =>
-          prev === actualImages.length - 1 ? 0 : prev + 1,
-        );
-      else if (e.key === "ArrowLeft")
-        setGalleryIndex((prev) =>
-          prev === 0 ? actualImages.length - 1 : prev - 1,
-        );
+      if (e.key === "ArrowRight") nextImage();
+      else if (e.key === "ArrowLeft") prevImage();
       else if (e.key === "Escape") setIsGalleryOpen(false);
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -232,18 +263,6 @@ const ProductDetails = () => {
       </div>
     );
   }
-
-  const displayLimit = 3;
-  const extraImagesCount = actualImages.length - displayLimit;
-
-  const nextImage = () =>
-    setGalleryIndex((prev) =>
-      prev === actualImages.length - 1 ? 0 : prev + 1,
-    );
-  const prevImage = () =>
-    setGalleryIndex((prev) =>
-      prev === 0 ? actualImages.length - 1 : prev - 1,
-    );
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] pb-28 md:pb-20 relative">
@@ -406,7 +425,12 @@ const ProductDetails = () => {
             >
               <ChevronLeft size={32} />
             </button>
-            <div className="w-full h-[60vh] md:h-[70vh] flex items-center justify-center px-4">
+            <div 
+              className="w-full h-[60vh] md:h-[70vh] flex items-center justify-center px-4"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEndGallery}
+            >
               <img
                 src={actualImages[galleryIndex]?.url}
                 alt={`${product.name} - View ${galleryIndex + 1}`}
@@ -501,7 +525,15 @@ const ProductDetails = () => {
 
             <div className="flex flex-col w-full">
               <div
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEndMain}
                 onClick={() => {
+                  // --- NEW: Block click if user was just swiping ---
+                  if (isSwiping.current) {
+                    isSwiping.current = false;
+                    return;
+                  }
                   const idx = actualImages.findIndex(
                     (img) => img.url === mainImage,
                   );
@@ -637,7 +669,6 @@ const ProductDetails = () => {
                 </button>
                 <button
                   onClick={() => setIsCheckoutOpen(true)}
-                  // Hover behavior fixed to ensure dark text consistently across both desktop and mobile
                   className="w-full lg:flex-1 flex items-center justify-center gap-2 bg-transparent border-2 border-[var(--color-primary)] lg:border-[var(--border-color)] text-[var(--color-primary)] lg:text-[var(--text-color)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-slate-900 lg:hover:text-slate-900 font-bold py-3.5 lg:py-4 rounded-full transition-all"
                 >
                   <ShoppingCart size={18} /> Buy Now
