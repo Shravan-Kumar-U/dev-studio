@@ -26,26 +26,41 @@ const ExploreModels = () => {
 
   // JS-Driven Continuous Auto-Scroll
   useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer || products.length === 0) return;
+  const scrollContainer = scrollRef.current;
+  if (!scrollContainer || products.length === 0) return;
 
-    let animationFrameId;
-    const scrollStep = () => {
-      if (!isPaused && !isDragging.current) {
-        scrollContainer.scrollLeft += 2;
-        
-        // Reset scroll position to create an infinite loop effect
-        if (scrollContainer.scrollLeft >= (scrollContainer.scrollWidth - scrollContainer.clientWidth)) {
-          scrollContainer.scrollLeft = 0;
-        }
+  let animationFrameId;
+  let lastTime = performance.now();
+
+  // Pixels per second
+  const AUTO_SCROLL_SPEED = 100;
+
+  const scrollStep = (currentTime) => {
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    if (!isPaused && !isDragging.current) {
+      // Time-based scrolling keeps the speed constant
+      // even when the mobile frame rate changes.
+      scrollContainer.scrollLeft +=
+        (AUTO_SCROLL_SPEED * deltaTime) / 1000;
+
+      // Reset scroll position for infinite scrolling
+      if (
+        scrollContainer.scrollLeft >=
+        scrollContainer.scrollWidth - scrollContainer.clientWidth
+      ) {
+        scrollContainer.scrollLeft = 0;
       }
-      animationFrameId = requestAnimationFrame(scrollStep);
-    };
+    }
 
     animationFrameId = requestAnimationFrame(scrollStep);
+  };
 
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isPaused, products]);
+  animationFrameId = requestAnimationFrame(scrollStep);
+
+  return () => cancelAnimationFrame(animationFrameId);
+}, [isPaused, products]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price || 0);
