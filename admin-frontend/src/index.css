@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--color-yellow-400);
+  --color-primary-hover: var(--color-yellow-500);
+  
+  --color-surface-light: var(--color-white);
+  --color-background-light: var(--color-slate-50);
+  --color-text-light: var(--color-slate-900);
+  --color-text-muted-light: var(--color-slate-500);
+  --color-border-light: var(--color-slate-200);
+
+  --color-surface-dark: var(--color-slate-800);
+  --color-background-dark: var(--color-slate-900);
+  --color-text-dark: var(--color-slate-50);
+  --color-text-muted-dark: var(--color-slate-400);
+  --color-border-dark: var(--color-slate-700);
+}
+
+/* Base Styles for Dark/Light Mode */
+@layer base {
+  :root {
+    color-scheme: light;
+    --bg-color: var(--color-background-light);
+    --surface-color: var(--color-surface-light);
+    --text-color: var(--color-text-light);
+    --text-muted: var(--color-text-muted-light);
+    --border-color: var(--color-border-light);
+  }
+
+  .dark {
+    color-scheme: dark;
+    --bg-color: var(--color-background-dark);
+    --surface-color: var(--color-surface-dark);
+    --text-color: var(--color-text-dark);
+    --text-muted: var(--color-text-muted-dark);
+    --border-color: var(--color-border-dark);
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+}

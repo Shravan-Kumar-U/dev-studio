@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ffc107; /* Matches the vibrant yellow in your design */
+  --color-primary-hover: #ffca2c;
+  
+  --color-surface-light: #ffffff;
+  --color-background-light: #f8f9fa;
+  --color-text-light: #212529;
+  --color-text-muted-light: #6c757d;
+  --color-border-light: #dee2e6;
+
+  --color-surface-dark: #212529;
+  --color-background-dark: #121212; /* Deep dark background from reference */
+  --color-text-dark: #f8f9fa;
+  --color-text-muted-dark: #adb5bd;
+  --color-border-dark: #343a40;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --bg-color: var(--color-background-light);
+    --surface-color: var(--color-surface-light);
+    --text-color: var(--color-text-light);
+    --text-muted: var(--color-text-muted-light);
+    --border-color: var(--color-border-light);
+  }
+
+  .dark {
+    color-scheme: dark;
+    --bg-color: var(--color-background-dark);
+    --surface-color: var(--color-surface-dark);
+    --text-color: var(--color-text-dark);
+    --text-muted: var(--color-text-muted-dark);
+    --border-color: var(--color-border-dark);
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+/* Custom Marquee Animation (Left to Right) */
+@layer utilities {
+  .animate-marquee-ltr {
+    /* 40s duration makes it smooth and readable. You can increase/decrease this. */
+    animation: marquee-ltr 30s linear infinite;
+  }
+  
+  /* Pauses the animation when the user hovers over the track */
+  .pause-on-hover:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marquee-ltr {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
