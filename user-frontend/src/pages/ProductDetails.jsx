@@ -309,7 +309,7 @@ const ProductDetails = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Shravan Kumar"
+                  placeholder="Enter your name"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="w-full px-4 py-3 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-color)] outline-none focus:border-[var(--color-primary)] transition-colors"
