@@ -9,6 +9,7 @@ import {
   Send,
   ImagePlus,
   CheckCircle2,
+  WandSparkles
 } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 
@@ -114,7 +115,7 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6">
               <div className="flex items-center gap-4 md:gap-6 text-center md:text-left">
                 <div className="hidden sm:flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
-                  <Variable size={32} />
+                  <WandSparkles size={32} />
                 </div>
                 <div>
                   <h3 className="text-xl md:text-2xl font-bold text-[var(--text-color)]">
