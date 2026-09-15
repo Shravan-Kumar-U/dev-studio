@@ -26,7 +26,7 @@ const PageLoader = ({ onComplete }) => {
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [onComplete]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[var(--bg-color)]">
