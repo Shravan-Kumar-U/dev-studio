@@ -51,14 +51,19 @@ const ProductDetails = () => {
   const isSwiping = useRef(false);
   const minSwipeDistance = 50;
 
-  const fetchProductData = async () => {
+  // Change 1: Add isReconnect parameter (default to false)
+  const fetchProductData = async (isReconnect = false) => {
     try {
       const res = await api.get(`/products/${id}`);
       const productData = res.data.data;
       setProduct(productData);
-      // Only set main image initially to prevent overriding user selection on live updates
-      if (!mainImage)
+      
+      // Change 2: Replace the 'if (!mainImage)' condition with this:
+      // Always set the main image on a fresh navigation. 
+      // Only skip it if it's a silent background socket reconnect.
+      if (!isReconnect) {
         setMainImage(productData.images[0]?.url || "/placeholder.png");
+      }
 
       const allRes = await api.get("/products");
       const filtered = allRes.data.data.filter((p) => p._id !== id).slice(0, 4);
@@ -74,7 +79,7 @@ const ProductDetails = () => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setLoading(true);
     setMainImage("");
-    fetchProductData();
+    fetchProductData(false);
   }, [id]);
 
   // Re-sync on Reconnection
@@ -82,7 +87,7 @@ const ProductDetails = () => {
     if (!isConnected) {
       wasDisconnected.current = true;
     } else if (isConnected && wasDisconnected.current) {
-      fetchProductData();
+      fetchProductData(true);
       wasDisconnected.current = false;
     }
   }, [isConnected]);
