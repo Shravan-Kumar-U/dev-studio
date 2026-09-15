@@ -14,6 +14,8 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  // NEW: State to track if the API is actively fetching data
+  const [isFetching, setIsFetching] = useState(false); 
   const searchRef = useRef(null);
 
   const location = useLocation();
@@ -29,16 +31,23 @@ const Navbar = () => {
         const scroll = windowHeight > 0 ? (totalScroll / windowHeight) : 0;
         setScrollProgress(scroll * 100);
 
-        const sections = ['home', 'models', 'about', 'contact'];
-        for (const section of sections.reverse()) {
-          if (section === 'home' && window.scrollY < 300) {
-            setActiveSection('home');
-            break;
-          }
-          const element = document.getElementById(section);
-          if (element && window.scrollY >= (element.offsetTop - 150)) {
-            setActiveSection(section);
-            break;
+        // FIX: Check if the user has scrolled to the absolute bottom of the page
+        const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10;
+
+        if (isAtBottom) {
+          setActiveSection('contact');
+        } else {
+          const sections = ['home', 'models', 'about', 'contact'];
+          for (const section of sections.reverse()) {
+            if (section === 'home' && window.scrollY < 300) {
+              setActiveSection('home');
+              break;
+            }
+            const element = document.getElementById(section);
+            if (element && window.scrollY >= (element.offsetTop - 150)) {
+              setActiveSection(section);
+              break;
+            }
           }
         }
       });
@@ -62,11 +71,16 @@ const Navbar = () => {
 
   // Fetch live search results from backend API
   useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setIsFetching(false);
+      return;
+    }
+    
+    // Set fetching to true immediately when typing starts
+    setIsFetching(true); 
+
     const fetchSearchResults = async () => {
-      if (!searchQuery.trim()) {
-        setSearchResults([]);
-        return;
-      }
       try {
         const res = await api.get('/products');
         const filtered = res.data.data.filter(p => 
@@ -76,6 +90,9 @@ const Navbar = () => {
         setSearchResults(filtered);
       } catch (err) {
         console.error('Search fetch failed:', err);
+      } finally {
+        // Stop the loader once data arrives
+        setIsFetching(false);
       }
     };
 
@@ -185,11 +202,18 @@ const Navbar = () => {
                   <div className="absolute right-0 mt-2 w-[85vw] sm:w-80 md:w-96 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-muted)] font-semibold">
                       <span>Search Results</span>
-                      <span>{searchResults.length} found</span>
+                      <span>{!isFetching ? searchResults.length : '...'} found</span>
                     </div>
 
                     <div className="max-h-80 overflow-y-auto divide-y divide-[var(--border-color)]/50">
-                      {searchResults.length > 0 ? (
+                      
+                      {/* FIX: Check if fetching first. If true, show Yellow Loader */}
+                      {isFetching ? (
+                        <div className="py-10 flex flex-col items-center justify-center px-4">
+                          <div className="w-8 h-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mb-3"></div>
+                          <p className="text-xs text-[var(--text-muted)] font-medium tracking-wide">Searching models...</p>
+                        </div>
+                      ) : searchResults.length > 0 ? (
                         searchResults.map((item) => (
                           <div 
                             key={item._id}
