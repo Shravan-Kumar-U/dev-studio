@@ -12,7 +12,8 @@ const AboutSection = () => {
             <p className="text-sm font-bold text-[var(--color-primary)] tracking-widest uppercase mb-3">About</p>
             <h2 className="text-4xl md:text-5xl font-extrabold text-[var(--text-color)] mb-6 leading-tight">About <span className="text-[var(--color-primary)]">DEV STUDIO</span></h2>
             <p className="text-lg md:text-xl text-[var(--text-muted)] font-medium mb-4">Turning ideas into reality with high-quality 3D models.</p>
-            <p className="text-base md:text-lg text-[var(--text-muted)] mb-10 leading-relaxed">At DEV STUDIO, we create detailed and meaningful 3D models that bring your ideas, faith and creativity to life. From Christian items to collectibles, home decor and custom designs, our goal is to make 3D printing simple and inspiring for everyone.</p>
+            <p className="text-base md:text-lg text-[var(--text-muted)] mb-10 leading-relaxed">At <b>DEV STUDIO</b>, we create detailed and meaningful 3D models that bring your ideas and creativity to life. From collectibles and home decor to functional products and custom designs, our goal is to make 3D printing simple, accessible, and inspiring for everyone.
+            </p>
             <div className="grid grid-cols-2 gap-x-6 gap-y-10">
               <div className="flex flex-col"><Diamond size={32} className="text-[var(--color-primary)] mb-3" /><h4 className="text-[var(--text-color)] font-bold text-lg mb-1">Premium Quality</h4><p className="text-[var(--text-muted)] text-sm">Clean, detailed and durable prints.</p></div>
               <div className="flex flex-col"><Lightbulb size={32} className="text-[var(--color-primary)] mb-3" /><h4 className="text-[var(--text-color)] font-bold text-lg mb-1">Creative Designs</h4><p className="text-[var(--text-muted)] text-sm">Your ideas, our expertise.</p></div>

@@ -321,7 +321,7 @@ const Footer = () => {
                     required
                     value={formData.customerName}
                     onChange={handleInputChange}
-                    placeholder="John Doe"
+                    placeholder="Enter Product name"
                     className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm text-[var(--text-color)] focus:border-[var(--color-primary)] outline-none transition-colors"
                   />
                 </div>
