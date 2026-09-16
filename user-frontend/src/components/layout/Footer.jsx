@@ -286,7 +286,7 @@ const Footer = () => {
             <div className="px-6 py-5 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--surface-color)] shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center">
-                  <Variable size={22} />
+                  <WandSparkles size={32} />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[var(--text-color)]">
