@@ -57,9 +57,9 @@ const ProductDetails = () => {
       const res = await api.get(`/products/${id}`);
       const productData = res.data.data;
       setProduct(productData);
-      
+
       // Change 2: Replace the 'if (!mainImage)' condition with this:
-      // Always set the main image on a fresh navigation. 
+      // Always set the main image on a fresh navigation.
       // Only skip it if it's a silent background socket reconnect.
       if (!isReconnect) {
         setMainImage(productData.images[0]?.url || "/placeholder.png");
@@ -154,16 +154,20 @@ const ProductDetails = () => {
 
     if (Math.abs(distance) > minSwipeDistance) {
       isSwiping.current = true; // Flag to prevent the click (zoom) from triggering
-      const currentIndex = actualImages.findIndex((img) => img.url === mainImage);
+      const currentIndex = actualImages.findIndex(
+        (img) => img.url === mainImage,
+      );
       if (currentIndex === -1) return;
 
       if (distance > minSwipeDistance) {
         // Swiped Left -> Next Image
-        const nextIdx = currentIndex === actualImages.length - 1 ? 0 : currentIndex + 1;
+        const nextIdx =
+          currentIndex === actualImages.length - 1 ? 0 : currentIndex + 1;
         setMainImage(actualImages[nextIdx].url);
       } else {
         // Swiped Right -> Prev Image
-        const prevIdx = currentIndex === 0 ? actualImages.length - 1 : currentIndex - 1;
+        const prevIdx =
+          currentIndex === 0 ? actualImages.length - 1 : currentIndex - 1;
         setMainImage(actualImages[prevIdx].url);
       }
     }
@@ -317,9 +321,18 @@ const ProductDetails = () => {
                   min="1"
                   max="10"
                   value={quantity}
-                  onChange={(e) =>
-                    setQuantity(Math.max(1, parseInt(e.target.value) || 1))
-                  }
+                  // 1. CHANGE THIS onChange handler:
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // Allow the input to be completely empty while typing
+                    setQuantity(val === "" ? "" : parseInt(val));
+                  }}
+                  // 2. ADD THIS onBlur handler:
+                  onBlur={() => {
+                    // If the user leaves the input blank, types 0, or goes over 10, fix it when they click away
+                    if (quantity === "" || quantity < 1) setQuantity(1);
+                    else if (quantity > 10) setQuantity(10);
+                  }}
                   className="w-12 text-center bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg text-sm font-bold text-[var(--text-color)] py-1 outline-none"
                 />
               </div>
@@ -397,7 +410,7 @@ const ProductDetails = () => {
                     Total Amount:
                   </span>
                   <div className="text-lg font-extrabold text-[var(--text-color)]">
-                    ₹{product.price * quantity}
+                    ₹{product.price * (quantity || 1)}
                   </div>
                 </div>
 
@@ -430,7 +443,7 @@ const ProductDetails = () => {
             >
               <ChevronLeft size={32} />
             </button>
-            <div 
+            <div
               className="w-full h-[60vh] md:h-[70vh] flex items-center justify-center px-4"
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
