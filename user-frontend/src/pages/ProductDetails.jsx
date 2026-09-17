@@ -79,6 +79,7 @@ const ProductDetails = () => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setLoading(true);
     setMainImage("");
+    setQuantity(1);
     fetchProductData(false);
   }, [id]);
 
@@ -233,6 +234,7 @@ const ProductDetails = () => {
       return;
     }
 
+    const finalQuantity = quantity || 1;
     const totalPrice = product.price * quantity;
     const productUrl = window.location.href; // Dynamically grabs the current URL
 
@@ -240,7 +242,7 @@ const ProductDetails = () => {
       `*New 3D Print Order - Dev Studio* 🚀\n\n` +
       `*Product:* ${product.name}\n` +
       `*Product Link:* ${productUrl}\n` +
-      `*Price:* ₹${product.price} x ${quantity} = *₹${totalPrice}*\n` +
+      `*Price:* ₹${product.price} x ${finalQuantity} = *₹${totalPrice}*\n` +
       `*Image:* ${mainImage}\n\n` +
       `*Customer Details:*\n` +
       `Name: ${customerName}\n` +
@@ -280,7 +282,9 @@ const ProductDetails = () => {
         <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl relative overflow-hidden">
             <button
-              onClick={() => setIsCheckoutOpen(false)}
+              onClick={() => {
+                setIsCheckoutOpen(false)
+              }}
               className="absolute top-6 right-6 p-2 text-[var(--text-muted)] hover:text-[var(--text-color)] rounded-full transition-colors"
             >
               <X size={22} />
@@ -321,17 +325,19 @@ const ProductDetails = () => {
                   min="1"
                   max="10"
                   value={quantity}
-                  // 1. CHANGE THIS onChange handler:
                   onChange={(e) => {
                     const val = e.target.value;
-                    // Allow the input to be completely empty while typing
-                    setQuantity(val === "" ? "" : parseInt(val));
+                    // Allow the field to be empty when backspacing
+                    if (val === "") {
+                      setQuantity("");
+                    } else {
+                      // Apply min of 1 and max of 10 if a number is typed
+                      setQuantity(Math.min(10, Math.max(1, parseInt(val))));
+                    }
                   }}
-                  // 2. ADD THIS onBlur handler:
                   onBlur={() => {
-                    // If the user leaves the input blank, types 0, or goes over 10, fix it when they click away
-                    if (quantity === "" || quantity < 1) setQuantity(1);
-                    else if (quantity > 10) setQuantity(10);
+                    // If the user clicks away while it's empty, default back to 1
+                    if (quantity === "") setQuantity(1);
                   }}
                   className="w-12 text-center bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg text-sm font-bold text-[var(--text-color)] py-1 outline-none"
                 />
