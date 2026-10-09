@@ -194,20 +194,39 @@ const ExploreModels = () => {
                     {product.description}
                   </p>
 
-                  <div className="mt-auto flex items-center justify-between pointer-events-auto">
+                  <div className="mt-auto w-full pointer-events-auto">
                     <Link
                       to={`/models/${product._id}`}
-                      className="px-4 py-1.5 rounded-full border border-[var(--border-color)] text-[var(--text-color)] text-xs sm:text-sm font-bold group-hover:border-[var(--color-primary)] group-active:border-[var(--color-primary)] hover:bg-[var(--color-primary)] active:bg-[var(--color-primary)] hover:text-slate-900 active:text-slate-900 transition-colors"
+                      className="
+      w-full min-h-12 sm:min-h-14
+      px-4 py-3
+      rounded-full
+      border border-[var(--border-color)]
+      text-slate-900 md:text-[var(--text-color)]
+      bg-[var(--color-primary)]
+      md:bg-transparent
+      text-sm sm:text-base font-bold
+      flex items-center justify-center gap-3
+
+      transition-colors
+
+      md:group-hover:border-[var(--color-primary)]
+      md:group-active:border-[var(--color-primary)]
+      md:hover:bg-[var(--color-primary)]
+      md:active:bg-[var(--color-primary)]
+      md:hover:text-slate-900
+      md:active:text-slate-900
+    "
                     >
-                      View Model
-                    </Link>
-                    <Link
-                      to={`/models/${product._id}`}
-                      className="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--color-primary)] text-slate-900 rounded-full flex items-center justify-center transform group-hover:scale-110 group-active:scale-110 hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-hover)] transition-all shadow-md"
-                    >
+                      <span>View Model</span>
+
                       <ArrowRight
-                        size={16}
-                        className="font-bold sm:w-[18px] sm:h-[18px]"
+                        size={18}
+                        className="
+        shrink-0
+        transition-transform
+        md:group-hover:translate-x-1
+      "
                       />
                     </Link>
                   </div>
