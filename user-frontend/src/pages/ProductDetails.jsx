@@ -16,6 +16,7 @@ import {
   Layers,
   MessageCircle,
   Send,
+  Wallet,
 } from "lucide-react";
 import api from "../services/api";
 import PageLoader from "../components/ui/PageLoader";
@@ -32,6 +33,9 @@ const ProductDetails = () => {
   // Gallery Modal States
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  // --- NEW: Payment Method Choice Modal State ---
+  const [isPaymentChoiceOpen, setIsPaymentChoiceOpen] = useState(false);
 
   // WhatsApp Checkout Modal States
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -257,6 +261,64 @@ const ProductDetails = () => {
     setIsCheckoutOpen(false);
   };
 
+  // --- NEW: Google Pay (UPI) Payment ---
+  // Opens Google Pay on the user's phone with the payee and the exact amount
+  // (product price from the backend x quantity) pre-filled.
+  const handleGooglePayPayment = () => {
+    const upiId = import.meta.env.VITE_GPAY_UPI_ID;
+    const payeeName = import.meta.env.VITE_GPAY_MERCHANT_NAME || "Dev Studio";
+
+    if (!upiId) {
+      console.error(
+        "VITE_GPAY_UPI_ID is missing in the environment configuration.",
+      );
+      alert(
+        "Payment configuration is currently missing. Please try again later.",
+      );
+      return;
+    }
+
+    const finalQuantity = quantity || 1;
+    // Amount always comes from the backend product price
+    const amount = (Number(product.price) * finalQuantity).toFixed(2);
+
+    if (!Number(amount) || Number(amount) <= 0) {
+      alert("Invalid payment amount. Please refresh and try again.");
+      return;
+    }
+
+    const note = `${product.name} x ${finalQuantity}`.slice(0, 60);
+
+    // encodeURIComponent keeps spaces as %20 (UPI apps don't like '+')
+    const query =
+      `pa=${encodeURIComponent(upiId)}` +
+      `&pn=${encodeURIComponent(payeeName)}` +
+      `&am=${encodeURIComponent(amount)}` +
+      `&cu=INR` +
+      `&tn=${encodeURIComponent(note)}`;
+
+    const ua = navigator.userAgent || "";
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+
+    if (isAndroid) {
+      // Android intent that targets the Google Pay app directly
+      window.location.href =
+        `intent://pay?${query}#Intent;scheme=upi;` +
+        `package=com.google.android.apps.nbu.paisa.user;end`;
+    } else if (isIOS) {
+      // iOS Google Pay deep link
+      window.location.href = `gpay://upi/pay?${query}`;
+    } else {
+      alert(
+        "Google Pay can only be opened on a mobile phone. Please open this page on your phone, or use Order via WhatsApp.",
+      );
+      return;
+    }
+
+    setIsPaymentChoiceOpen(false);
+  };
+
   if (loading) {
     return <PageLoader onComplete={() => {}} />;
   }
@@ -277,6 +339,93 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] pb-28 md:pb-20 relative">
+      {/* --- NEW: Payment Method Choice Modal --- */}
+      {isPaymentChoiceOpen && (
+        <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl relative overflow-hidden">
+            <button
+              onClick={() => setIsPaymentChoiceOpen(false)}
+              className="absolute top-6 right-6 p-2 text-[var(--text-muted)] hover:text-[var(--text-color)] rounded-full transition-colors"
+            >
+              <X size={22} />
+            </button>
+
+            <h3 className="text-xl font-bold text-[var(--text-color)] mb-1">
+              Choose how to buy
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] mb-6">
+              Select a payment option to continue.
+            </p>
+
+            <div className="flex items-center gap-4 p-3 bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] mb-6">
+              <img
+                src={mainImage}
+                alt={product.name}
+                className="w-16 h-16 object-contain rounded-xl bg-surface p-1 shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-sm text-[var(--text-color)] truncate">
+                  {product.name}
+                </h4>
+                <p className="text-xs text-[var(--color-primary)] font-semibold">
+                  ₹{product.price} per unit
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--text-muted)]">Qty:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={quantity}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setQuantity("");
+                    } else {
+                      setQuantity(Math.min(10, Math.max(1, parseInt(val))));
+                    }
+                  }}
+                  onBlur={() => {
+                    if (quantity === "") setQuantity(1);
+                  }}
+                  className="w-12 text-center bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg text-sm font-bold text-[var(--text-color)] py-1 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-xs text-[var(--text-muted)]">
+                Total Amount:
+              </span>
+              <span className="text-lg font-extrabold text-[var(--text-color)]">
+                ₹{product.price * (quantity || 1)}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setIsPaymentChoiceOpen(false);
+                  setIsCheckoutOpen(true);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg transition-colors"
+              >
+                <MessageCircle size={18} />
+                Order via WhatsApp
+              </button>
+              <button
+  onClick={handleGooglePayPayment}
+  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-colors duration-200"
+>
+  <Wallet size={18} />
+  Pay via Google Pay
+</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* --- WhatsApp Checkout Modal --- */}
       {isCheckoutOpen && (
         <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -692,7 +841,7 @@ const ProductDetails = () => {
                   <Download size={18} /> Download Model
                 </button>
                 <button
-                  onClick={() => setIsCheckoutOpen(true)}
+                  onClick={() => setIsPaymentChoiceOpen(true)}
                   className="w-full lg:flex-1 flex items-center justify-center gap-2 bg-transparent border-2 border-[var(--color-primary)] lg:border-[var(--border-color)] text-[var(--color-primary)] lg:text-[var(--text-color)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-slate-900 lg:hover:text-slate-900 font-bold py-3.5 lg:py-4 rounded-full transition-all"
                 >
                   <ShoppingCart size={18} /> Buy Now
