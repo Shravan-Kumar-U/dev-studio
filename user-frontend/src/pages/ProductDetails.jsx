@@ -416,7 +416,7 @@ const ProductDetails = () => {
               </button>
               <button
   onClick={handleGooglePayPayment}
-  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-colors duration-200"
+  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-lg transition-colors duration-200"
 >
   <Wallet size={18} />
   Pay via Google Pay
